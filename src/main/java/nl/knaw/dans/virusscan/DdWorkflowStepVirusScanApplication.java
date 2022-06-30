@@ -17,8 +17,19 @@
 package nl.knaw.dans.virusscan;
 
 import io.dropwizard.Application;
+import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import nl.knaw.dans.virusscan.resource.InvokeResourceImpl;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
 
 public class DdWorkflowStepVirusScanApplication extends Application<DdWorkflowStepVirusScanConfiguration> {
 
@@ -38,6 +49,13 @@ public class DdWorkflowStepVirusScanApplication extends Application<DdWorkflowSt
 
     @Override
     public void run(final DdWorkflowStepVirusScanConfiguration configuration, final Environment environment) {
+        final var client = new JerseyClientBuilder(environment).using(configuration.getJerseyClientConfiguration())
+            .build(getName());
+        //        environment.jersey().register(new ExternalServiceResource(client));
+
+        var resource = new InvokeResourceImpl(client);
+
+        environment.jersey().register(resource);
 
     }
 
