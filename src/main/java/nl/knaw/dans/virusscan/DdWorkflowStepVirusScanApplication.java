@@ -20,16 +20,10 @@ import io.dropwizard.Application;
 import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import nl.knaw.dans.virusscan.core.service.ClamdServiceImpl;
+import nl.knaw.dans.virusscan.core.service.DataverseApiServiceImpl;
+import nl.knaw.dans.virusscan.core.service.VirusScannerImpl;
 import nl.knaw.dans.virusscan.resource.InvokeResourceImpl;
-
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
-import java.security.SecureRandom;
-import java.security.cert.X509Certificate;
 
 public class DdWorkflowStepVirusScanApplication extends Application<DdWorkflowStepVirusScanConfiguration> {
 
@@ -53,7 +47,11 @@ public class DdWorkflowStepVirusScanApplication extends Application<DdWorkflowSt
             .build(getName());
         //        environment.jersey().register(new ExternalServiceResource(client));
 
-        var resource = new InvokeResourceImpl(client);
+        var clamdService = new ClamdServiceImpl(configuration.getVirusscanner().getClamd());
+        var dataverseApiService = new DataverseApiServiceImpl(configuration.getDataverse(), client);
+        var virusScanner = new VirusScannerImpl(configuration.getVirusscanner(), clamdService);
+
+        var resource = new InvokeResourceImpl(client, dataverseApiService, virusScanner);
 
         environment.jersey().register(resource);
 

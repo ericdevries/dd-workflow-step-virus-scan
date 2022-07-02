@@ -15,13 +15,13 @@
  */
 package nl.knaw.dans.virusscan.resource;
 
-import javax.ws.rs.Path;
-import javax.ws.rs.core.Response;
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
+import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 @Path("/invoke")
 public interface InvokeResource {
@@ -76,6 +76,10 @@ public interface InvokeResource {
 
         public void setMinorVersion(String minorVersion) {
             this.minorVersion = minorVersion;
+        }
+
+        public String getVersion() {
+            return String.format("%s.%s", this.majorVersion, this.minorVersion);
         }
 
         @Override

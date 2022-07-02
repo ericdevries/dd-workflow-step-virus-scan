@@ -15,8 +15,10 @@
  */
 package nl.knaw.dans.virusscan.resource;
 
+import nl.knaw.dans.virusscan.core.service.DataverseApiService;
+import nl.knaw.dans.virusscan.core.service.VirusScanner;
+
 import javax.ws.rs.client.Client;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
@@ -27,34 +29,16 @@ import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 
 public class InvokeResourceImpl implements InvokeResource {
+    static final int BUFFER_SIZE = 1024 * 8;
     private final Client client;
-    static final int BUFFER_SIZE = 1024*8;
+    private final DataverseApiService dataverseApiService;
 
-    public InvokeResourceImpl(Client client) {
+    private final VirusScanner virusScanner;
+
+    public InvokeResourceImpl(Client client, DataverseApiService dataverseApiService, VirusScanner virusScanner) {
         this.client = client;
-    }
-
-    @Override
-    public Response invokeVirusScan(PrePublishWorkflowPayload payload) {
-        var apiToken = "09286b45-08ee-43bd-8867-057788afd7bd";
-        var url = "https://dar.dans.knaw.nl/api/access/dataset/:persistentId?persistentId=" + payload.getGlobalId(); //doi:10.5072/FK2/O9LNLQ"
-        System.out.println("PAYLOAD: " + payload);
-
-        var target = client.target(url);
-        var result = target.path("/")
-            .request()
-            .get(InputStream.class);
-
-        System.out.println("INPUT STREAM: " + result);
-
-        try {
-            var output = scanStream(result);
-            System.out.println("OUTPUT: " + output);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return Response.status(200).build();
+        this.dataverseApiService = dataverseApiService;
+        this.virusScanner = virusScanner;
     }
 
     public static String scanStream(InputStream inputStream) throws IOException {
@@ -77,7 +61,6 @@ public class InvokeResourceImpl implements InvokeResource {
                     .array();
 
                 sum += bytesRead;
-                System.out.println("WRITING SIZE: " + bytesRead + " (sum: " + sum + ")");
                 // write the size of the payload
                 outputStream.write(header);
                 outputStream.write(buffer, 0, bytesRead);
@@ -102,5 +85,49 @@ public class InvokeResourceImpl implements InvokeResource {
             // this should be checked against a certain output format to verify it is OK
             return new String(socketInputStream.readAllBytes());
         }
+    }
+
+    @Override
+    public Response invokeVirusScan(PrePublishWorkflowPayload payload) {
+        System.out.println("PAYLOAD: " + payload);
+        var files = dataverseApiService.listFiles(payload.getDatasetId(), payload.getVersion());
+
+        for (var file: files) {
+            System.out.println("FILE: " + file);
+
+            var result = dataverseApiService.getFile("" + file.getDataFile().getId());
+            System.out.println("INPUT STREAM IN RESOURCE: " + result);
+
+            try {
+                virusScanner.scanForVirus(result);
+                System.out.println("NO VIRUS");
+            } catch (Exception e) {
+                System.out.println("VIRUS FOUND");
+                e.printStackTrace();
+            }
+
+        }
+
+        /*
+        var url = "https://dar.dans.knaw.nl/api/access/dataset/:persistentId?persistentId=" + payload.getGlobalId(); //doi:10.5072/FK2/O9LNLQ"
+
+        var target = client.target(url);
+        var result = target.path("/")
+            .request()
+            .get(InputStream.class);
+
+        System.out.println("INPUT STREAM: " + result);
+
+        try {
+            var output = scanStream(result);
+            System.out.println("OUTPUT: " + output);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        *
+         */
+
+        return Response.status(200).build();
     }
 }

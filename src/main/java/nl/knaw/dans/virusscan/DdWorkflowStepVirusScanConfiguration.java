@@ -19,6 +19,8 @@ package nl.knaw.dans.virusscan;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.dropwizard.Configuration;
 import io.dropwizard.client.JerseyClientConfiguration;
+import nl.knaw.dans.virusscan.core.config.DataverseConfig;
+import nl.knaw.dans.virusscan.core.config.VirusScannerConfig;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -28,6 +30,37 @@ public class DdWorkflowStepVirusScanConfiguration extends Configuration {
     @Valid
     @NotNull
     private JerseyClientConfiguration jerseyClient = new JerseyClientConfiguration();
+
+    @Valid
+    @NotNull
+    private DataverseConfig dataverse;
+    @Valid
+    @NotNull
+    private VirusScannerConfig virusscanner;
+
+    public JerseyClientConfiguration getJerseyClient() {
+        return jerseyClient;
+    }
+
+    public void setJerseyClient(JerseyClientConfiguration jerseyClient) {
+        this.jerseyClient = jerseyClient;
+    }
+
+    public DataverseConfig getDataverse() {
+        return dataverse;
+    }
+
+    public void setDataverse(DataverseConfig dataverse) {
+        this.dataverse = dataverse;
+    }
+
+    public VirusScannerConfig getVirusscanner() {
+        return virusscanner;
+    }
+
+    public void setVirusscanner(VirusScannerConfig virusscanner) {
+        this.virusscanner = virusscanner;
+    }
 
     @JsonProperty("jerseyClient")
     public JerseyClientConfiguration getJerseyClientConfiguration() {

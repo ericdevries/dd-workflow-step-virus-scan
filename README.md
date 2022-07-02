@@ -6,4 +6,4 @@ dd-workflow-step-virus-scan
 For documentation see: https://dans-knaw.github.io/dd-workflow-step-virus-scan
 
 
-docker run -p 3310:3310 -v ./clamd.conf:/etc/clamav/clamd.conf mkodockx/docker-clamav:alpine
+docker run -p 3310:3310 -v $(pwd)/clamd.conf:/etc/clamav/clamd.conf mkodockx/docker-clamav:alpine
