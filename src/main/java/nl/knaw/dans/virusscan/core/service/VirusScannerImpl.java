@@ -28,8 +28,6 @@ public class VirusScannerImpl implements VirusScanner {
 
     private final ClamdService clamdService;
 
-    private final int BUFFER_SIZE = 1024 * 8;
-
     public VirusScannerImpl(VirusScannerConfig virusScannerConfig, ClamdService clamdService) {
         this.virusScannerConfig = virusScannerConfig;
         this.clamdService = clamdService;

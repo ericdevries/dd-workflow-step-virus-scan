@@ -21,6 +21,7 @@ import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import nl.knaw.dans.virusscan.core.service.ClamdServiceImpl;
+import nl.knaw.dans.virusscan.core.service.DatasetScanTaskFactoryImpl;
 import nl.knaw.dans.virusscan.core.service.DataverseApiServiceImpl;
 import nl.knaw.dans.virusscan.core.service.VirusScannerImpl;
 import nl.knaw.dans.virusscan.resource.InvokeResourceImpl;
@@ -45,13 +46,16 @@ public class DdWorkflowStepVirusScanApplication extends Application<DdWorkflowSt
     public void run(final DdWorkflowStepVirusScanConfiguration configuration, final Environment environment) {
         final var client = new JerseyClientBuilder(environment).using(configuration.getJerseyClientConfiguration())
             .build(getName());
-        //        environment.jersey().register(new ExternalServiceResource(client));
 
+        var scanDatasetTaskQueue = configuration.getVirusscanner().getScanDatasetTaskQueue().build(environment);
+        var resumeDatasetTaskQueue = configuration.getVirusscanner().getResumeDatasetTaskQueue().build(environment);
         var clamdService = new ClamdServiceImpl(configuration.getVirusscanner().getClamd());
         var dataverseApiService = new DataverseApiServiceImpl(configuration.getDataverse(), client);
         var virusScanner = new VirusScannerImpl(configuration.getVirusscanner(), clamdService);
 
-        var resource = new InvokeResourceImpl(client, dataverseApiService, virusScanner);
+        var datasetScanTaskFactory = new DatasetScanTaskFactoryImpl(dataverseApiService, virusScanner, scanDatasetTaskQueue);
+
+        var resource = new InvokeResourceImpl(datasetScanTaskFactory);
 
         environment.jersey().register(resource);
 

@@ -15,19 +15,9 @@
  */
 package nl.knaw.dans.virusscan.core.service;
 
-import nl.knaw.dans.lib.dataverse.DataverseException;
-import nl.knaw.dans.lib.dataverse.model.file.FileMeta;
+import nl.knaw.dans.virusscan.resource.PrePublishWorkflowPayload;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
+public interface DatasetScanTaskFactory {
 
-public interface DataverseApiService {
-
-    List<FileMeta> listFiles(String datasetId, String invocationId, String version) throws IOException, DataverseException;
-
-    InputStream getFile(int fileId) throws IOException, DataverseException;
-
-    void completeWorkflow(String invocationId) throws IOException, DataverseException;
-    void failWorkflow(String invocationId, String reason, String message) throws IOException, DataverseException;
+    void startTask(PrePublishWorkflowPayload payload);
 }
