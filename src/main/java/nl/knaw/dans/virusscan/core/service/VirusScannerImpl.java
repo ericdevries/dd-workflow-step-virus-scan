@@ -16,13 +16,19 @@
 package nl.knaw.dans.virusscan.core.service;
 
 import nl.knaw.dans.virusscan.core.config.VirusScannerConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class VirusScannerImpl implements VirusScanner {
+
+    private static final Logger log = LoggerFactory.getLogger(VirusScanner.class);
 
     private final VirusScannerConfig virusScannerConfig;
 
@@ -36,16 +42,33 @@ public class VirusScannerImpl implements VirusScanner {
     @Override
     public List<String> scanForVirus(InputStream inputStream) throws IOException {
         var result = clamdService.scanStream(inputStream);
-        var errorMessages = new ArrayList<String>();
 
-        for (var line : result) {
-            var matcher = virusScannerConfig.getResultPositivePattern().matcher(line);
+        return result.stream()
+            .map(line -> {
+                // filter out trailing zero bytes
+                var index = line.indexOf('\0');
 
-            if (matcher.matches()) {
-                errorMessages.add(matcher.group(1));
-            }
-        }
+                if (index > -1) {
+                    return line.substring(0, index);
+                }
+                else {
+                    return line;
+                }
 
-        return errorMessages;
+            })
+            .map(String::strip).map(line -> {
+                var positiveMatcher = virusScannerConfig.getResultPositivePattern().matcher(line);
+                var negativeMatcher = virusScannerConfig.getResultNegativePattern().matcher(line);
+
+                // the negative matcher is stricter than the positive matcher, so we need to make sure it does NOT match a negative result
+                // before checking for a positive match
+                if (!negativeMatcher.matches() && positiveMatcher.matches()) {
+                    return positiveMatcher.group(1);
+                }
+
+                return null;
+            })
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
     }
 }

@@ -17,6 +17,7 @@ package nl.knaw.dans.virusscan.core.service;
 
 import nl.knaw.dans.lib.dataverse.DataverseException;
 import nl.knaw.dans.lib.dataverse.model.file.FileMeta;
+import nl.knaw.dans.virusscan.core.model.DataverseVersionResponse;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,4 +31,6 @@ public interface DataverseApiService {
 
     void completeWorkflow(String invocationId) throws IOException, DataverseException;
     void failWorkflow(String invocationId, String reason, String message) throws IOException, DataverseException;
+
+    DataverseVersionResponse getDataverseInfo() throws IOException;
 }

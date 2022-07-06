@@ -15,14 +15,12 @@
  */
 package nl.knaw.dans.virusscan.resource;
 
+import nl.knaw.dans.virusscan.core.model.PrePublishWorkflowPayload;
 import nl.knaw.dans.virusscan.core.service.DatasetScanTaskFactory;
-import nl.knaw.dans.virusscan.core.service.DataverseApiService;
-import nl.knaw.dans.virusscan.core.service.VirusScanner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.Response;
-import java.util.concurrent.ExecutorService;
 
 public class InvokeResourceImpl implements InvokeResource {
     private static final Logger log = LoggerFactory.getLogger(InvokeResourceImpl.class);
@@ -36,23 +34,6 @@ public class InvokeResourceImpl implements InvokeResource {
     @Override
     public Response invokeVirusScan(PrePublishWorkflowPayload payload) {
         this.taskFactory.startTask(payload);
-
-        /*
-        log.info("Requesting list of files for dataset with id {}", payload.getGlobalId());
-        var files = dataverseApiService.listFiles(payload.getDatasetId(), payload.getVersion());
-
-        for (var file: files) {
-            var result = dataverseApiService.getFile("" + file.getDataFile().getId());
-
-            try {
-                virusScanner.scanForVirus(result);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-        }
-
-         */
 
         return Response.status(200).build();
     }

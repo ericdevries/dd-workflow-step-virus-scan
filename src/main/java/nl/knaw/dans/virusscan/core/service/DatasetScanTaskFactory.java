@@ -15,7 +15,7 @@
  */
 package nl.knaw.dans.virusscan.core.service;
 
-import nl.knaw.dans.virusscan.resource.PrePublishWorkflowPayload;
+import nl.knaw.dans.virusscan.core.model.PrePublishWorkflowPayload;
 
 public interface DatasetScanTaskFactory {
 

@@ -15,6 +15,8 @@
  */
 package nl.knaw.dans.virusscan.resource;
 
+import nl.knaw.dans.virusscan.core.model.PrePublishWorkflowPayload;
+
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;

@@ -15,28 +15,26 @@
  */
 package nl.knaw.dans.virusscan.core.service;
 
-import nl.knaw.dans.virusscan.core.model.PrePublishWorkflowPayload;
+import nl.knaw.dans.virusscan.core.config.ResumeTasksConfig;
+import nl.knaw.dans.virusscan.core.model.DatasetResumeTaskPayload;
 
 import java.util.concurrent.ExecutorService;
 
-public class DatasetScanTaskFactoryImpl implements DatasetScanTaskFactory {
-
+public class DatasetResumeTaskFactoryImpl implements DatasetResumeTaskFactory {
     private final DataverseApiService dataverseApiService;
-    private final VirusScanner virusScanner;
-
     private final ExecutorService executorService;
-    private final DatasetResumeTaskFactory datasetResumeTaskFactory;
 
-    public DatasetScanTaskFactoryImpl(DataverseApiService dataverseApiService, VirusScanner virusScanner, ExecutorService executorService, DatasetResumeTaskFactoryImpl datasetResumeTaskFactory) {
+    private final ResumeTasksConfig resumeTasksConfig;
+
+    public DatasetResumeTaskFactoryImpl(DataverseApiService dataverseApiService, ExecutorService executorService, ResumeTasksConfig resumeTasksConfig) {
         this.dataverseApiService = dataverseApiService;
-        this.virusScanner = virusScanner;
         this.executorService = executorService;
-        this.datasetResumeTaskFactory = datasetResumeTaskFactory;
+        this.resumeTasksConfig = resumeTasksConfig;
     }
 
     @Override
-    public void startTask(PrePublishWorkflowPayload payload) {
-        var task = new DatasetScanTask(dataverseApiService, virusScanner, payload, datasetResumeTaskFactory);
+    public void completeWorkflow(DatasetResumeTaskPayload payload) {
+        var task = new DatasetResumeTask(dataverseApiService, payload, resumeTasksConfig);
         executorService.submit(task);
     }
 }

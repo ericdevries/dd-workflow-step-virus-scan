@@ -21,6 +21,7 @@ import nl.knaw.dans.lib.dataverse.DataverseException;
 import nl.knaw.dans.lib.dataverse.model.file.FileMeta;
 import nl.knaw.dans.lib.dataverse.model.workflow.ResumeMessage;
 import nl.knaw.dans.virusscan.core.config.DataverseConfig;
+import nl.knaw.dans.virusscan.core.model.DataverseVersionResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,56 +36,28 @@ public class DataverseApiServiceImpl implements DataverseApiService {
 
     private final DataverseConfig dataverseConfig;
     private final DataverseClient client;
+    private final Client httpClient;
 
     public DataverseApiServiceImpl(DataverseConfig dataverseConfig, Client client) {
         this.dataverseConfig = dataverseConfig;
-//        this.client = client;
 
         var config = new DataverseClientConfig(URI.create(dataverseConfig.getBaseUrl()), dataverseConfig.getApiToken());
         this.client = new DataverseClient(config);
+        this.httpClient = client;
 
     }
 
     @Override
     public List<FileMeta> listFiles(String datasetId, String invocationId, String version) throws IOException, DataverseException {
-        // TODO make sure this works with this dataverse client, otherwise use raw http
         var dataset = client.dataset(datasetId, invocationId);
-        var files = dataset.getFiles(version);
+        var files = dataset.getFiles(":draft");
 
         return files.getData();
-        /*
-        files.getData().get(0).getDataFile().getPidURL()
-        var url = String.format("https://dar.dans.knaw.nl/api/datasets/%s/versions/:draft", datasetId);
-        log.debug("Requesting list of files on url {}", url);
-        var target = client.target(url);
-
-        var result = target.path("/")
-            .request()
-            .header("X-Dataverse-key", dataverseConfig.getApiToken())
-            .get(DatasetDraftRequest.class);
-
-        log.trace("Result from API call: {}", result);
-        return result.getData().getFiles();
-
-         */
     }
 
     @Override
     public InputStream getFile(int fileId) throws IOException, DataverseException {
         return client.basicFileAccess(fileId).getFile().getEntity().getContent();
-        /*
-        // TODO make sure this works with this dataverse client, otherwise use raw http (probably is not supported yet for InputStream)
-        var url = String.format("https://dar.dans.knaw.nl/api/access/datafile/%s", fileId);
-
-        log.debug("Requesting inputstream for file {} on url {}", fileId, url);
-        var target = client.target(url);
-
-        return target.path("/")
-            .request()
-            .header("X-Dataverse-key", dataverseConfig.getApiToken())
-            .get(InputStream.class);
-
-         */
     }
 
     @Override
@@ -98,4 +71,22 @@ public class DataverseApiServiceImpl implements DataverseApiService {
         var resumeMessage = new ResumeMessage("Failure", reason, message);
         this.client.workflows().resume(invocationId, resumeMessage);
     }
+
+    @Override
+    public DataverseVersionResponse getDataverseInfo() throws IOException {
+        var uri = String.format("%s/api/info/version", dataverseConfig.getBaseUrl());
+
+        try {
+            var output =  httpClient.target(URI.create(uri))
+                .request()
+                .header("X-Dataverse-key", dataverseConfig.getApiToken())
+                .get(DataverseVersionResponse.class);
+
+            return output;
+        } catch (Exception e) {
+            throw new IOException("Error requesting dataverse version", e);
+        }
+    }
+
+
 }

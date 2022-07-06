@@ -16,17 +16,33 @@
 package nl.knaw.dans.virusscan.core.config;
 
 import nl.knaw.dans.lib.util.ExecutorServiceFactory;
+import nl.knaw.dans.virusscan.core.config.validation.ValidClamdBufferSize;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import java.util.regex.Pattern;
 
 public class VirusScannerConfig {
 
+    @NotNull
     private Pattern resultPositivePattern;
+    @NotNull
+    @Valid
+    @javax.validation.constraints.Pattern(regexp = "[^%]*%1[^%]*", message = "resultPositiveMessageTemplate should have exactly 1 substitution parameter")
     private String resultPositiveMessageTemplate;
+    @NotNull
     private ExecutorServiceFactory scanDatasetTaskQueue;
+    @NotNull
     private ExecutorServiceFactory resumeDatasetTaskQueue;
+    @Valid
+    @NotNull
     private Pattern resultNegativePattern;
+    @Valid
+    @NotNull
+    @ValidClamdBufferSize
     private ClamdConfig clamd;
+    @Valid
+    @NotNull
     private ResumeTasksConfig resumeTasks;
 
     public ResumeTasksConfig getResumeTasks() {

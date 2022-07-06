@@ -15,13 +15,39 @@
  */
 package nl.knaw.dans.virusscan.core.config;
 
+import javax.validation.Valid;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+
 public class ClamdConfig {
 
+    @NotNull
+    @Valid
     private String host;
 
+    @NotNull
+    @Min(1)
+    @Max(65535)
     private int port;
+
+    // The chunksize determines how much data we send to ClamAV to check in total.
+    // This should be less than the maximum configured filesize in ClamAV
+    // If a file is bigger than the chunksize, it is split up and sent as multiple files
+    // A sensible value would be around 10MB
+    // If it is bigger than the ClamAV value `StreamMaxLength` it will cause errors
+    @Min(1024*1024)
     private int chunksize;
+
+    // Because files are split up, it might be split right in the middle of a possible match.
+    // To prevent this, a part of the previous payload is sent along to make sure this cannot happen.
+    // A sensible value would be around 1MB. This value should be a lot less than the chunksize value
+    @Min(1024)
     private int overlapsize;
+
+    // Indicates how much to send per packet. This is represented as a byte array. This value
+    // should be a lot less than the overlap size. A sensible value would be around 8KB
+    @Min(128)
     private int buffersize;
 
     public int getBuffersize() {

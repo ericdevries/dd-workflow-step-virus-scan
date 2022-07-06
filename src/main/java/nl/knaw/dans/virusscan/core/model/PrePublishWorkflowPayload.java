@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.knaw.dans.virusscan.resource;
+package nl.knaw.dans.virusscan.core.model;
 
 public class PrePublishWorkflowPayload {
     private String invocationId;

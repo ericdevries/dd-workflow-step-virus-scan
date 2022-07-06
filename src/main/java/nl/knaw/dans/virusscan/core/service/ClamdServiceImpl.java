@@ -56,7 +56,6 @@ public class ClamdServiceImpl implements ClamdService {
     }
 
     Socket getConnection() throws IOException {
-        System.out.println("GET SOCKET!");
         return new Socket(clamdConfig.getHost(), clamdConfig.getPort());
     }
 
@@ -120,7 +119,7 @@ public class ClamdServiceImpl implements ClamdService {
                     }
                 }
 
-                log.debug("Total payload written (size was {}), sending final bytes", bytesWritten);
+                log.trace("Total payload written (size was {}), sending final bytes", bytesWritten);
                 // last payload should be 0 length to indicate we are done
                 outputStream.write(new byte[] { 0, 0, 0, 0 });
                 outputStream.flush();
@@ -129,7 +128,7 @@ public class ClamdServiceImpl implements ClamdService {
                 bytesWritten = 0;
 
                 var result = new String(socketInputStream.readAllBytes());
-                log.debug("Intermediate result for virus scan: '{}'; overlap buffer size is {}", result, overlapBuffer.length);
+                log.trace("Completed batch; intermediate result for virus scan: '{}'; overlap buffer size is {}", result, overlapBuffer.length);
                 results.add(result);
             }
         }

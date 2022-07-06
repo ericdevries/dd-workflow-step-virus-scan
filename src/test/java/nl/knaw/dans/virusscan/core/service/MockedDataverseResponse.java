@@ -13,34 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.knaw.dans.virusscan.core;
+package nl.knaw.dans.virusscan.core.service;
 
-public class DatasetDraftRequest {
+import com.fasterxml.jackson.databind.ObjectMapper;
+import nl.knaw.dans.lib.dataverse.DataverseResponse;
+import nl.knaw.dans.lib.dataverse.model.file.FileMeta;
 
-    private String status;
-    private DatasetVersion data;
+import java.util.List;
 
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public DatasetVersion getData() {
-        return data;
-    }
-
-    public void setData(DatasetVersion data) {
-        this.data = data;
-    }
-
-    @Override
-    public String toString() {
-        return "DatasetDraftRequest{" +
-            "status='" + status + '\'' +
-            ", data=" + data +
-            '}';
+public class MockedDataverseResponse extends DataverseResponse<List<FileMeta>> {
+    public MockedDataverseResponse(String bodyText) {
+        super(bodyText, new ObjectMapper(), List.class, FileMeta.class);
     }
 }

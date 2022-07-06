@@ -15,10 +15,14 @@
  */
 package nl.knaw.dans.virusscan.core.config;
 
+import javax.validation.Valid;
+import javax.validation.constraints.Min;
 import java.time.Duration;
 
 public class ResumeTasksConfig {
 
+    @Valid
+    @Min(1)
     private int maxTries;
     private Duration waitBetweenTries;
 

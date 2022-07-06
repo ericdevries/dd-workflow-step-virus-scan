@@ -18,9 +18,14 @@ package nl.knaw.dans.virusscan;
 
 import io.dropwizard.Application;
 import io.dropwizard.client.JerseyClientBuilder;
+import io.dropwizard.health.conf.HealthConfiguration;
+import io.dropwizard.health.core.HealthCheckBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import nl.knaw.dans.virusscan.core.health.ClamdHealthCheck;
+import nl.knaw.dans.virusscan.core.health.DataverseHealthCheck;
 import nl.knaw.dans.virusscan.core.service.ClamdServiceImpl;
+import nl.knaw.dans.virusscan.core.service.DatasetResumeTaskFactoryImpl;
 import nl.knaw.dans.virusscan.core.service.DatasetScanTaskFactoryImpl;
 import nl.knaw.dans.virusscan.core.service.DataverseApiServiceImpl;
 import nl.knaw.dans.virusscan.core.service.VirusScannerImpl;
@@ -39,7 +44,13 @@ public class DdWorkflowStepVirusScanApplication extends Application<DdWorkflowSt
 
     @Override
     public void initialize(final Bootstrap<DdWorkflowStepVirusScanConfiguration> bootstrap) {
-        // TODO: application initialization
+        bootstrap.addBundle(new HealthCheckBundle<>() {
+
+            @Override
+            protected HealthConfiguration getHealthConfiguration(final DdWorkflowStepVirusScanConfiguration configuration) {
+                return configuration.getHealthConfiguration();
+            }
+        });
     }
 
     @Override
@@ -53,12 +64,14 @@ public class DdWorkflowStepVirusScanApplication extends Application<DdWorkflowSt
         var dataverseApiService = new DataverseApiServiceImpl(configuration.getDataverse(), client);
         var virusScanner = new VirusScannerImpl(configuration.getVirusscanner(), clamdService);
 
-        var datasetScanTaskFactory = new DatasetScanTaskFactoryImpl(dataverseApiService, virusScanner, scanDatasetTaskQueue);
+        var datasetResumeTaskFactory = new DatasetResumeTaskFactoryImpl(dataverseApiService, resumeDatasetTaskQueue, configuration.getVirusscanner().getResumeTasks());
+        var datasetScanTaskFactory = new DatasetScanTaskFactoryImpl(dataverseApiService, virusScanner, scanDatasetTaskQueue, datasetResumeTaskFactory);
 
         var resource = new InvokeResourceImpl(datasetScanTaskFactory);
 
         environment.jersey().register(resource);
 
+        environment.healthChecks().register("Clamd", new ClamdHealthCheck(configuration.getVirusscanner().getClamd()));
+        environment.healthChecks().register("Dataverse", new DataverseHealthCheck(dataverseApiService));
     }
-
 }

@@ -13,32 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.knaw.dans.virusscan.core.config;
+package nl.knaw.dans.virusscan.core.config.validation;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
+import javax.validation.Constraint;
+import javax.validation.Payload;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-public class DataverseConfig {
-    @Valid
-    @NotNull
-    private String baseUrl;
-    @Valid
-    @NotNull
-    private String apiToken;
+@Target({ ElementType.FIELD })
+@Retention(RetentionPolicy.RUNTIME)
+@Constraint(validatedBy = ValidClamdBufferSizeValidator.class)
+public @interface ValidClamdBufferSize {
+    String message() default "buffer sizes should be significantly different from each other";
 
-    public String getApiToken() {
-        return apiToken;
-    }
+    Class<?>[] groups() default {};
 
-    public void setApiToken(String apiToken) {
-        this.apiToken = apiToken;
-    }
-
-    public String getBaseUrl() {
-        return baseUrl;
-    }
-
-    public void setBaseUrl(String baseUrl) {
-        this.baseUrl = baseUrl;
-    }
+    Class<? extends Payload>[] payload() default {};
 }

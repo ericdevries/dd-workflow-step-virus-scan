@@ -13,14 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.knaw.dans.virusscan.resource;
+package nl.knaw.dans.virusscan.core.service;
 
-public class DatasetScannerTask implements Runnable {
-    public DatasetScannerTask(PrePublishWorkflowPayload payload) {
-    }
+import nl.knaw.dans.virusscan.core.model.DatasetResumeTaskPayload;
 
-    @Override
-    public void run() {
+public interface DatasetResumeTaskFactory {
 
-    }
+    void completeWorkflow(DatasetResumeTaskPayload payload);
 }

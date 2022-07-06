@@ -26,3 +26,17 @@ logging:
     - type: file
       archive: false
       currentLogFilename: data/dd-workflow-step-virus-scan.log
+
+health:
+  delayedShutdownHandlerEnabled: false
+  initialOverallState: false
+  healthChecks:
+    - name: Clamd
+      critical: true
+    - name: Dataverse
+      critical: true
+      schedule:
+        checkInterval: 60s
+        downtimeInterval: 10s
+        failureAttempts: 3
+        successAttempts: 1

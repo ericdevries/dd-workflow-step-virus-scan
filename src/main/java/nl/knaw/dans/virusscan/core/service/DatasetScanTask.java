@@ -13,16 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package nl.knaw.dans.virusscan.core.service;
 
+import nl.knaw.dans.lib.dataverse.DataverseException;
 import nl.knaw.dans.lib.dataverse.model.file.FileMeta;
-import nl.knaw.dans.virusscan.resource.PrePublishWorkflowPayload;
+import nl.knaw.dans.virusscan.core.model.DatasetResumeTaskPayload;
+import nl.knaw.dans.virusscan.core.model.PrePublishWorkflowPayload;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class DatasetScanTask implements Runnable {
 
@@ -30,50 +33,51 @@ public class DatasetScanTask implements Runnable {
     private final DataverseApiService dataverseApiService;
     private final VirusScanner virusScanner;
     private final PrePublishWorkflowPayload payload;
+    private final DatasetResumeTaskFactory datasetResumeTaskFactory;
 
-    public DatasetScanTask(DataverseApiService dataverseApiService, VirusScanner virusScanner, PrePublishWorkflowPayload payload) {
+    public DatasetScanTask(DataverseApiService dataverseApiService, VirusScanner virusScanner, PrePublishWorkflowPayload payload, DatasetResumeTaskFactory datasetResumeTaskFactory) {
         this.dataverseApiService = dataverseApiService;
         this.virusScanner = virusScanner;
         this.payload = payload;
+        this.datasetResumeTaskFactory = datasetResumeTaskFactory;
     }
 
     @Override
     public void run() {
-
         try {
-            // fetch all files by ID
-            var files = dataverseApiService.listFiles(payload.getGlobalId(), payload.getInvocationId(), payload.getVersion());
-            var fileMatches = new HashMap<FileMeta, List<String>>();
-
-            for (var file : files) {
-                log.debug("Checking status for file {}", file);
-                var fileInputStream = dataverseApiService.getFile(file.getDataFile().getId());
-                var viruses = virusScanner.scanForVirus(fileInputStream);
-
-                if (viruses.size() > 0) {
-                    log.warn("Found {} viruses in file {}", viruses.size(), file);
-                    fileMatches.put(file, viruses);
-                }
-            }
-
-            if (fileMatches.isEmpty()) {
-                dataverseApiService.completeWorkflow(payload.getInvocationId());
-            }
-            else {
-                var messages = fileMatches.entrySet().stream().map(file -> {
-                    var filename = file.getKey().getDataFile().getFilename();
-                    var errors = String.join(" and ", file.getValue());
-
-                    return String.format("%s -> %s FOUND", filename, errors);
-                }).collect(Collectors.joining(", "));
-
-                dataverseApiService.failWorkflow(payload.getInvocationId(), messages, messages);
-            }
-
+            runTask();
         }
         catch (Exception e) {
             log.error("Error checking files", e);
         }
+    }
 
+    void runTask() throws IOException, DataverseException {
+        // fetch all files by ID
+        var files = dataverseApiService.listFiles(payload.getGlobalId(), payload.getInvocationId(), payload.getVersion());
+        var fileMatches = new HashMap<FileMeta, List<String>>();
+
+        for (var file : files) {
+            log.debug("Checking status for file {}", file.getDataFile().getFilename());
+            var fileInputStream = dataverseApiService.getFile(file.getDataFile().getId());
+            var viruses = virusScanner.scanForVirus(fileInputStream);
+
+            if (viruses.size() > 0) {
+                log.warn("Found {} viruses in file {}", viruses.size(), file);
+
+                for (var virus : viruses) {
+                    log.warn(" - {}", virus);
+                }
+
+                fileMatches.put(file, viruses);
+            }
+        }
+
+        var resultPayload = new DatasetResumeTaskPayload();
+        resultPayload.setId(payload.getGlobalId());
+        resultPayload.setInvocationId(payload.getInvocationId());
+        resultPayload.setMatches(fileMatches);
+
+        datasetResumeTaskFactory.completeWorkflow(resultPayload);
     }
 }

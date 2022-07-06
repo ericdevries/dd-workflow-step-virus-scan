@@ -17,10 +17,9 @@ virusscanner:
     host: localhost
     port: 3310
     # chunk size in bytes
-    #chunksize: 20971520 # 20MB
-    #overlapsize: 1048576 # 1MB
-    chunksize: 1048576
-    overlapsize: 4096
+    chunksize: 8388608
+    overlapsize: 524288
+    buffersize: 8096
   # Pattern to match a positive. The must be one group which will be used in the resume message
   resultPositivePattern: '^stream: (.*)$'
   # If clamscan's response matches this pattern, the file is declared OK
@@ -87,3 +86,17 @@ logging:
       archive: false
       timeZone: system
       currentLogFilename: /var/opt/dans.knaw.nl/log/dd-workflow-step-virus-scan/dd-workflow-step-virus-scan.log
+
+health:
+  delayedShutdownHandlerEnabled: false
+  initialOverallState: false
+  healthChecks:
+    - name: Clamd
+      critical: true
+    - name: Dataverse
+      critical: true
+      schedule:
+        checkInterval: 60s
+        downtimeInterval: 10s
+        failureAttempts: 3
+        successAttempts: 1
