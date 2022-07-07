@@ -1,0 +1,14 @@
+{
+  "stepType": "http/authExt",
+  "provider": ":internal",
+  "parameters": {
+    "rollbackUrl": "http://localhost:20325/rollback",
+    "contentType": "application/json",
+    "body": "{\"invocationId\": \"${invocationId}\",\"globalId\": \"${dataset.globalId}\",\"datasetId\": \"${dataset.id}\", \"majorVersion\": \"${majorVersion}\", \"minorVersion\": \"${minorVersion}\" }",
+    "url": "http://localhost:20325/invoke",
+    "expectedResponse": "Success.*",
+    "rollbackMethod": "POST",
+    "method": "POST"
+  },
+  "requiredSettings": {}
+}
