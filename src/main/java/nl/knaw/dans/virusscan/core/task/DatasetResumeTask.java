@@ -25,7 +25,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.time.Duration;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -82,12 +81,8 @@ public class DatasetResumeTask implements Runnable {
 
         if (payload.getMatches().isEmpty()) {
             log.info("Dataset with id {} and invocation ID {} is clean", payload.getId(), payload.getInvocationId());
-            dataverseApiService.completeWorkflow(payload.getInvocationId(),
-                "Virus scan workflow completed",
-                "An external workflow to scan for viruses has completed and found no threats in the dataset"
-            )
-
-            ;
+            dataverseApiService.completeWorkflow(payload.getInvocationId(), "Virus scan workflow completed",
+                "An external workflow to scan for viruses has completed and found no threats in the dataset");
 
         }
         else {
