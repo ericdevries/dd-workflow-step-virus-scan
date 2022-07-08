@@ -18,6 +18,7 @@ package nl.knaw.dans.virusscan.core.service;
 import nl.knaw.dans.lib.dataverse.DataverseException;
 import nl.knaw.dans.virusscan.core.model.DatasetResumeTaskPayload;
 import nl.knaw.dans.virusscan.core.model.PrePublishWorkflowPayload;
+import nl.knaw.dans.virusscan.core.task.DatasetScanTask;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 

@@ -14,12 +14,16 @@
  * limitations under the License.
  */
 
-package nl.knaw.dans.virusscan.core.service;
+package nl.knaw.dans.virusscan.core.task;
 
 import nl.knaw.dans.lib.dataverse.DataverseException;
 import nl.knaw.dans.lib.dataverse.model.file.FileMeta;
 import nl.knaw.dans.virusscan.core.model.DatasetResumeTaskPayload;
 import nl.knaw.dans.virusscan.core.model.PrePublishWorkflowPayload;
+import nl.knaw.dans.virusscan.core.service.DatasetResumeTaskFactory;
+import nl.knaw.dans.virusscan.core.service.DataverseApiService;
+import nl.knaw.dans.virusscan.core.service.DataverseApiServiceImpl;
+import nl.knaw.dans.virusscan.core.service.VirusScanner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

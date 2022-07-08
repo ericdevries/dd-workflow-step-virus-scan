@@ -15,6 +15,8 @@
  */
 package nl.knaw.dans.virusscan.core.model;
 
+import java.util.Objects;
+
 public class PrePublishWorkflowPayload {
     private String invocationId;
     private String globalId;
@@ -75,5 +77,21 @@ public class PrePublishWorkflowPayload {
             ", majorVersion='" + majorVersion + '\'' +
             ", minorVersion='" + minorVersion + '\'' +
             '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        PrePublishWorkflowPayload that = (PrePublishWorkflowPayload) o;
+        return Objects.equals(invocationId, that.invocationId) && Objects.equals(globalId, that.globalId) && Objects.equals(datasetId, that.datasetId)
+            && Objects.equals(majorVersion, that.majorVersion) && Objects.equals(minorVersion, that.minorVersion);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(invocationId, globalId, datasetId, majorVersion, minorVersion);
     }
 }

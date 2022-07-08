@@ -17,25 +17,29 @@ package nl.knaw.dans.virusscan.core.service;
 
 import nl.knaw.dans.virusscan.core.config.ResumeTasksConfig;
 import nl.knaw.dans.virusscan.core.model.DatasetResumeTaskPayload;
+import nl.knaw.dans.virusscan.core.model.PrePublishWorkflowPayload;
 import nl.knaw.dans.virusscan.core.task.DatasetResumeTask;
+import nl.knaw.dans.virusscan.core.task.DatasetScanTask;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.util.concurrent.ExecutorService;
 
-public class DatasetResumeTaskFactoryImpl implements DatasetResumeTaskFactory {
-    private final DataverseApiService dataverseApiService;
-    private final ExecutorService executorService;
+import static org.junit.jupiter.api.Assertions.*;
 
-    private final ResumeTasksConfig resumeTasksConfig;
+class DatasetResumeTaskFactoryImplTest {
 
-    public DatasetResumeTaskFactoryImpl(DataverseApiService dataverseApiService, ExecutorService executorService, ResumeTasksConfig resumeTasksConfig) {
-        this.dataverseApiService = dataverseApiService;
-        this.executorService = executorService;
-        this.resumeTasksConfig = resumeTasksConfig;
-    }
+    @Test
+    void completeWorkflow() {
+        var dataverseApiService = Mockito.mock(DataverseApiService.class);
+        var executorService = Mockito.mock(ExecutorService.class);
+        var config = new ResumeTasksConfig();
 
-    @Override
-    public void completeWorkflow(DatasetResumeTaskPayload payload) {
-        var task = new DatasetResumeTask(dataverseApiService, payload, resumeTasksConfig);
-        executorService.submit(task);
+        var task = new DatasetResumeTaskFactoryImpl(dataverseApiService, executorService, config);
+
+        var payload = new DatasetResumeTaskPayload();
+        task.completeWorkflow(payload);
+
+        Mockito.verify(executorService).submit(Mockito.any(DatasetResumeTask.class));
     }
 }

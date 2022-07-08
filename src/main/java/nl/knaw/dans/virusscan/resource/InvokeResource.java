@@ -23,14 +23,21 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 
-@Path("/invoke")
+@Path("/")
 public interface InvokeResource {
 
     @POST
+    @Path("/invoke")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     Response invokeVirusScan(@Valid PrePublishWorkflowPayload payload);
 
+    @POST
+    @Path("/rollback")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    Response rollback(Request request);
 }

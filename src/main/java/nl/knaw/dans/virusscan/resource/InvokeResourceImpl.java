@@ -20,12 +20,13 @@ import nl.knaw.dans.virusscan.core.service.DatasetScanTaskFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 
 public class InvokeResourceImpl implements InvokeResource {
     private static final Logger log = LoggerFactory.getLogger(InvokeResourceImpl.class);
 
-    private DatasetScanTaskFactory taskFactory;
+    private final DatasetScanTaskFactory taskFactory;
 
     public InvokeResourceImpl(DatasetScanTaskFactory taskFactory) {
         this.taskFactory = taskFactory;
@@ -33,8 +34,15 @@ public class InvokeResourceImpl implements InvokeResource {
 
     @Override
     public Response invokeVirusScan(PrePublishWorkflowPayload payload) {
+        log.info("Received request for virus scan, starting task: {}", payload);
         this.taskFactory.startTask(payload);
 
+        return Response.status(200).build();
+    }
+
+    @Override
+    public Response rollback(Request request) {
+        log.info("Rolling back virus scan");
         return Response.status(200).build();
     }
 }

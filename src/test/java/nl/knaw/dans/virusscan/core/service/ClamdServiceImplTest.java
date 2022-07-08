@@ -62,7 +62,5 @@ class ClamdServiceImplTest {
         assertEquals("zINSTREAM\0", new String(Arrays.copyOfRange(output, 134, 134 + 10)));
         // verify a part of the first stream is sent again in the second stream
         assertEquals("rovident eos dolorum", new String(Arrays.copyOfRange(output, 148, 168)));
-
-        System.out.println("String: " + new String(output));
     }
 }

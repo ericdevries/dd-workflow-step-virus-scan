@@ -26,6 +26,15 @@ public class ResumeTasksConfig {
     private int maxTries;
     private Duration waitBetweenTries;
 
+    public ResumeTasksConfig(int maxTries, Duration waitBetweenTries) {
+        this.maxTries = maxTries;
+        this.waitBetweenTries = waitBetweenTries;
+    }
+
+    public ResumeTasksConfig() {
+
+    }
+
     public int getMaxTries() {
         return maxTries;
     }

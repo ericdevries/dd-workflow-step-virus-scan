@@ -13,16 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.knaw.dans.virusscan.core.service;
+package nl.knaw.dans.virusscan.core.task;
 
 import nl.knaw.dans.lib.dataverse.DataverseException;
+import nl.knaw.dans.lib.dataverse.model.file.FileMeta;
 import nl.knaw.dans.virusscan.core.config.ResumeTasksConfig;
 import nl.knaw.dans.virusscan.core.model.DatasetResumeTaskPayload;
+import nl.knaw.dans.virusscan.core.service.DataverseApiService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class DatasetResumeTask implements Runnable {
@@ -46,6 +52,18 @@ public class DatasetResumeTask implements Runnable {
 
         for (var i = 0; i < maxTries; ++i) {
             try {
+                // don't sleep on the first run
+                if (i > 0) {
+                    sleep(pauseDuration);
+                }
+            }
+            catch (InterruptedException e) {
+                log.error("Exception was thrown while waiting between resume attempts");
+                break;
+            }
+
+            // now run the task
+            try {
                 runTask();
                 log.info("Dataset resume task executed successfully, finishing");
                 break;
@@ -53,36 +71,47 @@ public class DatasetResumeTask implements Runnable {
             catch (IOException | DataverseException e) {
                 log.error("Error completing workflow", e);
             }
-
-            try {
-                Thread.sleep(pauseDuration.get(ChronoUnit.MILLIS));
-            }
-            catch (InterruptedException e) {
-                log.error("Exception was thrown while waiting between resume attempts");
-                break;
-            }
         }
+    }
+
+    void sleep(Duration duration) throws InterruptedException {
+        Thread.sleep(duration.toMillis());
     }
 
     void runTask() throws IOException, DataverseException {
 
         if (payload.getMatches().isEmpty()) {
             log.info("Dataset with id {} and invocation ID {} is clean", payload.getId(), payload.getInvocationId());
-            dataverseApiService.completeWorkflow(payload.getInvocationId());
+            dataverseApiService.completeWorkflow(payload.getInvocationId(),
+                "Virus scan workflow completed",
+                "An external workflow to scan for viruses has completed and found no threats in the dataset"
+            )
+
+            ;
+
         }
         else {
             log.warn("Dataset with id {} and invocation ID {} contains positive matches", payload.getId(), payload.getInvocationId());
 
-            var messages = payload.getMatches().entrySet().stream().map(file -> {
+            var messages = generatePayload(new ArrayList<>(payload.getMatches().entrySet()));
+
+            payload.getMatches().entrySet().forEach(file -> {
                 var filename = file.getKey().getDataFile().getFilename();
                 var errors = String.join(" and ", file.getValue());
                 log.info("Dataset file {} contains match: {}", filename, errors);
-
-                return String.format("%s -> %s FOUND", filename, errors);
-            }).collect(Collectors.joining(", "));
+            });
 
             dataverseApiService.failWorkflow(payload.getInvocationId(), messages, messages);
         }
+    }
+
+    String generatePayload(List<Map.Entry<FileMeta, List<String>>> matches) {
+
+        return matches.stream().map(file -> {
+            var filename = file.getKey().getDataFile().getFilename();
+            var errors = String.join(" and ", file.getValue());
+            return String.format("%s -> %s", filename, errors);
+        }).collect(Collectors.joining(", "));
     }
 
 }

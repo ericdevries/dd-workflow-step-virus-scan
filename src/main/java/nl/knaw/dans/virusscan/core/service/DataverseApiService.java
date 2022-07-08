@@ -29,7 +29,7 @@ public interface DataverseApiService {
 
     InputStream getFile(int fileId) throws IOException, DataverseException;
 
-    void completeWorkflow(String invocationId) throws IOException, DataverseException;
+    void completeWorkflow(String invocationId, String reason, String message) throws IOException, DataverseException;
     void failWorkflow(String invocationId, String reason, String message) throws IOException, DataverseException;
 
     DataverseVersionResponse getDataverseInfo() throws IOException;

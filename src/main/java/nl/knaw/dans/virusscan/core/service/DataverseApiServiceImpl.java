@@ -35,21 +35,28 @@ public class DataverseApiServiceImpl implements DataverseApiService {
     private static final Logger log = LoggerFactory.getLogger(DataverseApiServiceImpl.class);
 
     private final DataverseConfig dataverseConfig;
-    private final DataverseClient client;
     private final Client httpClient;
+
+    private DataverseClient client;
 
     public DataverseApiServiceImpl(DataverseConfig dataverseConfig, Client client) {
         this.dataverseConfig = dataverseConfig;
-
-        var config = new DataverseClientConfig(URI.create(dataverseConfig.getBaseUrl()), dataverseConfig.getApiToken());
-        this.client = new DataverseClient(config);
         this.httpClient = client;
+    }
 
+    DataverseClient getDataverseClient() {
+        if (this.client == null) {
+            var config = new DataverseClientConfig(URI.create(dataverseConfig.getBaseUrl()), dataverseConfig.getApiToken());
+            this.client = new DataverseClient(config);
+        }
+
+        return client;
     }
 
     @Override
     public List<FileMeta> listFiles(String datasetId, String invocationId, String version) throws IOException, DataverseException {
-        var dataset = client.dataset(datasetId, invocationId);
+        log.trace("Getting list of files for data set {}, invocation id {} and version :draft", datasetId, invocationId);
+        var dataset = getDataverseClient().dataset(datasetId, invocationId);
         var files = dataset.getFiles(":draft");
 
         return files.getData();
@@ -57,19 +64,22 @@ public class DataverseApiServiceImpl implements DataverseApiService {
 
     @Override
     public InputStream getFile(int fileId) throws IOException, DataverseException {
-        return client.basicFileAccess(fileId).getFile().getEntity().getContent();
+        log.trace("Getting file with id {}", fileId);
+        return getDataverseClient().basicFileAccess(fileId).getFile().getEntity().getContent();
     }
 
     @Override
-    public void completeWorkflow(String invocationId) throws IOException, DataverseException {
-        var resumeMessage = new ResumeMessage("Success", null, null);
-        this.client.workflows().resume(invocationId, resumeMessage);
+    public void completeWorkflow(String invocationId, String reason, String message) throws IOException, DataverseException {
+        var resumeMessage = new ResumeMessage("Success", reason, message);
+        log.trace("Completing workflow with status Success, invocation id is {}", invocationId);
+        this.getDataverseClient().workflows().resume(invocationId, resumeMessage);
     }
 
     @Override
     public void failWorkflow(String invocationId, String reason, String message) throws IOException, DataverseException {
         var resumeMessage = new ResumeMessage("Failure", reason, message);
-        this.client.workflows().resume(invocationId, resumeMessage);
+        log.trace("Completing workflow with status Failure, reasin is '{}', message is '{}', invocation id is {}", reason, message, invocationId);
+        this.getDataverseClient().workflows().resume(invocationId, resumeMessage);
     }
 
     @Override
@@ -77,16 +87,15 @@ public class DataverseApiServiceImpl implements DataverseApiService {
         var uri = String.format("%s/api/info/version", dataverseConfig.getBaseUrl());
 
         try {
-            var output =  httpClient.target(URI.create(uri))
+            log.trace("Getting dataverse info from API");
+            return httpClient.target(URI.create(uri))
                 .request()
                 .header("X-Dataverse-key", dataverseConfig.getApiToken())
                 .get(DataverseVersionResponse.class);
-
-            return output;
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw new IOException("Error requesting dataverse version", e);
         }
     }
-
 
 }
