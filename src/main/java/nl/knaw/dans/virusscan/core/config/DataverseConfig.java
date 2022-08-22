@@ -22,17 +22,6 @@ public class DataverseConfig {
     @Valid
     @NotNull
     private String baseUrl;
-    @Valid
-    @NotNull
-    private String apiToken;
-
-    public String getApiToken() {
-        return apiToken;
-    }
-
-    public void setApiToken(String apiToken) {
-        this.apiToken = apiToken;
-    }
 
     public String getBaseUrl() {
         return baseUrl;

@@ -46,7 +46,7 @@ public class DataverseApiServiceImpl implements DataverseApiService {
 
     DataverseClient getDataverseClient() {
         if (this.client == null) {
-            var config = new DataverseClientConfig(URI.create(dataverseConfig.getBaseUrl()), dataverseConfig.getApiToken());
+            var config = new DataverseClientConfig(URI.create(dataverseConfig.getBaseUrl()));
             this.client = new DataverseClient(config);
         }
 
@@ -78,7 +78,7 @@ public class DataverseApiServiceImpl implements DataverseApiService {
     @Override
     public void failWorkflow(String invocationId, String reason, String message) throws IOException, DataverseException {
         var resumeMessage = new ResumeMessage("Failure", reason, message);
-        log.trace("Completing workflow with status Failure, reasin is '{}', message is '{}', invocation id is {}", reason, message, invocationId);
+        log.trace("Completing workflow with status Failure, reason is '{}', message is '{}', invocation id is {}", reason, message, invocationId);
         this.getDataverseClient().workflows().resume(invocationId, resumeMessage);
     }
 
@@ -90,7 +90,6 @@ public class DataverseApiServiceImpl implements DataverseApiService {
             log.trace("Getting dataverse info from API");
             return httpClient.target(URI.create(uri))
                 .request()
-                .header("X-Dataverse-key", dataverseConfig.getApiToken())
                 .get(DataverseVersionResponse.class);
         }
         catch (Exception e) {
