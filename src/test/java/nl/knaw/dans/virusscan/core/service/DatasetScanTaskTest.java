@@ -20,6 +20,7 @@ import nl.knaw.dans.virusscan.core.model.DatasetResumeTaskPayload;
 import nl.knaw.dans.virusscan.core.model.PrePublishWorkflowPayload;
 import nl.knaw.dans.virusscan.core.task.DatasetScanTask;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 
 import java.io.ByteArrayInputStream;
@@ -48,7 +49,7 @@ class DatasetScanTaskTest {
         Mockito.when(dataverseApiService.listFiles(Mockito.any(), Mockito.any(), Mockito.any()))
             .thenReturn(result.getData());
 
-        Mockito.when(dataverseApiService.getFile(Mockito.anyInt()))
+        Mockito.when(dataverseApiService.getFile(Mockito.anyInt(), Mockito.anyString()))
             .thenReturn(new ByteArrayInputStream("test".getBytes()));
 
         Mockito.when(virusScanner.scanForVirus(Mockito.any()))
@@ -83,7 +84,7 @@ class DatasetScanTaskTest {
         Mockito.when(dataverseApiService.listFiles(Mockito.any(), Mockito.any(), Mockito.any()))
             .thenReturn(data);
 
-        Mockito.when(dataverseApiService.getFile(Mockito.anyInt()))
+        Mockito.when(dataverseApiService.getFile(Mockito.anyInt(), Mockito.anyString()))
             .thenReturn(new ByteArrayInputStream("test".getBytes()));
 
         Mockito.when(virusScanner.scanForVirus(Mockito.any()))

@@ -63,7 +63,7 @@ public class DatasetScanTask implements Runnable {
 
         for (var file : files) {
             log.debug("Checking status for file {}", file.getDataFile().getFilename());
-            var fileInputStream = dataverseApiService.getFile(file.getDataFile().getId());
+            var fileInputStream = dataverseApiService.getFile(file.getDataFile().getId(), payload.getInvocationId());
             var viruses = virusScanner.scanForVirus(fileInputStream);
 
             if (viruses.size() > 0) {

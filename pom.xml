@@ -59,6 +59,7 @@
         <dependency>
             <groupId>nl.knaw.dans</groupId>
             <artifactId>dans-dataverse-client-lib</artifactId>
+            <version>0.5.0</version>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
