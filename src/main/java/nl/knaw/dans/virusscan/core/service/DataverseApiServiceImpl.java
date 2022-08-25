@@ -63,9 +63,9 @@ public class DataverseApiServiceImpl implements DataverseApiService {
     }
 
     @Override
-    public InputStream getFile(int fileId) throws IOException, DataverseException {
+    public InputStream getFile(int fileId, String invocationid) throws IOException, DataverseException {
         log.trace("Getting file with id {}", fileId);
-        return getDataverseClient().basicFileAccess(fileId).getFile().getEntity().getContent();
+        return getDataverseClient().basicFileAccess(fileId, invocationid).getFile().getEntity().getContent();
     }
 
     @Override
